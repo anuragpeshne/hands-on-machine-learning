@@ -1,0 +1,81 @@
+* Environment Setup
+** Versions
+   - Python
+     #+BEGIN_SRC python :results output
+     import sys
+     import os
+     print(sys.version)
+     print(os.getcwd())
+     #+END_SRC
+
+     #+RESULTS:
+     :
+     : >>>
+     : >>>
+     : >>> 3.7.2 (default, Jan 13 2019, 12:50:01)
+     : [Clang 10.0.0 (clang-1000.11.45.5)]
+     :
+     : >>> /Users/anuragpeshne/code/handsOnMachineLearning
+     :
+     : >>>
+
+** Using Isolated Environment
+*** Setup ~virtualenv~
+    #+BEGIN_SRC bash
+    virtualenv env
+    #+END_SRC
+*** Activate
+    #+BEGIN_SRC bash
+    source env/bin/activate
+    #+END_SRC
+** Get the Data
+   #+BEGIN_SRC python :results output :session data :export code
+   import os
+   import tarfile
+   from six.moves import urllib
+
+   DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
+   HOUSING_PATH = "datasets/housing"
+   HOUSING_URL = DOWNLOAD_ROOT + HOUSING_PATH + "/housing.tgz"
+
+   def fetch_housing_data(housing_url=HOUSING_URL, housing_path=HOUSING_PATH):
+       if not os.path.isdir(housing_path):
+           os.makedirs(housing_path)
+       tgz_path = os.path.join(housing_path, "housing.tgz")
+       urllib.request.urlretrieve(housing_url, tgz_path)
+       housing_tgz = tarfile.open(tgz_path)
+       housing_tgz.extractall(path=housing_path)
+       housing_tgz.close()
+
+   #+END_SRC
+
+   - execute
+     #+BEGIN_SRC python :results output :session data
+     fetch_housing_data()
+     #+END_SRC
+** Load Data
+   #+BEGIN_SRC python :results output :session data
+   import pandas as pd
+
+   def load_housing_data(housing_path=HOUSING_PATH):
+       csv_path = os.path.join(housing_path, "housing.csv")
+       return pd.read_csv(csv_path)
+   #+END_SRC
+
+   #+RESULTS:
+
+   - check data:
+     #+BEGIN_SRC python :results value :session data
+     housing = load_housing_data()
+     housing.head()
+     #+END_SRC
+
+     #+RESULTS:
+     :    longitude  latitude  housing_median_age       ...         median_income  median_house_value  ocean_proximity
+     : 0    -122.23     37.88                41.0       ...                8.3252            452600.0         NEAR BAY
+     : 1    -122.22     37.86                21.0       ...                8.3014            358500.0         NEAR BAY
+     : 2    -122.24     37.85                52.0       ...                7.2574            352100.0         NEAR BAY
+     : 3    -122.25     37.85                52.0       ...                5.6431            341300.0         NEAR BAY
+     : 4    -122.25     37.85                52.0       ...                3.8462            342200.0         NEAR BAY
+     :
+     : [5 rows x 10 columns]
