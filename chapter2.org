@@ -63,13 +63,13 @@
    def load_housing_data(housing_path=HOUSING_PATH):
        csv_path = os.path.join(housing_path, "housing.csv")
        return pd.read_csv(csv_path)
+   housing = load_housing_data()
    #+END_SRC
 
    #+RESULTS:
 
    - check data:
      #+BEGIN_SRC python :results value :session data :tangle yes
-     housing = load_housing_data()
      housing.head()
      #+END_SRC
 
@@ -168,3 +168,60 @@
       - Example: if surveying 1000 people, try to make sure these 1000 people are
         representative of the whole population. If sex ratio is 52:48, then try to
         maintain this ratio in survey participants too.
+    - In our example, median income is a very important attribute to predict median
+      housing prices. To ensure that the test set is representative of the various
+      categories of income in the whole dataset, we first need to create an income
+      category attribute.
+    - to limit the number of categories, divide of 1.5:
+      #+BEGIN_SRC python :results output :session data :tangle yes
+      import numpy as np
+      housing["income_cat"] = np.ceil(housing["median_income"] / 1.5)
+      housing["income_cat"].where(housing["income_cat"] < 5, 5.0, inplace=True)
+      #+END_SRC
+
+      #+RESULTS:
+
+    - Use scikit library for stratified sampling:
+      #+BEGIN_SRC python :results output :session data :tangle yes
+      from sklearn.model_selection import StratifiedShuffleSplit
+
+      split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+      for train_index, test_index in split.split(housing, housing["income_cat"]):
+        strat_train_set = housing.loc[train_index]
+        strat_test_set = housing.loc[test_index]
+      #+END_SRC
+
+      #+RESULTS:
+
+    - income category proportions:
+      #+BEGIN_SRC python :results output :session data :tangle yes
+      housing["income_cat"].value_counts() / len(housing)
+      #+END_SRC
+
+      #+RESULTS:
+      : 3.0    0.350581
+      : 2.0    0.318847
+      : 4.0    0.176308
+      : 5.0    0.114438
+      : 1.0    0.039826
+      : Name: income_cat, dtype: float64
+
+    - Remove income category data:
+      #+BEGIN_SRC python :results output :session data :tangle yes
+      for set in (strat_train_set, strat_test_set):
+        set.drop(["income_cat"], axis=1, inplace=True)
+      #+END_SRC
+
+      #+RESULTS:
+** Experimenting with Attribute Combinations
+   - sometimes combination of attribute is more interesting than individual attributes.
+     - example: number of bedrooms per rooms more interesting than number of bedrooms
+       and number of rooms
+       #+BEGIN_SRC python :results output :session data :tangle yes
+       housing["rooms_per_household"] = housing["total_rooms"]/housing["households"]
+       housing["bedrooms_per_room"] = housing["total_bedrooms"]/housing["total_rooms"]
+       housing["population_per_household"]=housing["population"]/housing["households"]
+       #+END_SRC
+
+       #+RESULTS:
+** TODO Data Cleaning
