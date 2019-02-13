@@ -1,0 +1,14 @@
+* Get Data
+  #+BEGIN_SRC python :results output :session data :tangle yes
+  from sklearn.datasets import fetch_openml
+  mnist = fetch_openml('mnist_784', data_home="datasets")
+  X, y = mnist["data"], mnist["target"]
+  print(X.shape)
+  print(y.shape)
+  #+END_SRC
+
+  #+RESULTS:
+  : (70000, 784)
+  : (70000,)
+
+  - by default data is stored in ~$HOME/scikit_learn_data~
