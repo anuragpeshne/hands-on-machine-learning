@@ -224,4 +224,77 @@
        #+END_SRC
 
        #+RESULTS:
-** TODO Data Cleaning
+** Data Cleaning
+   - most machine learning algorithms cannot deal with missing features
+   - There are three options if data is missing in a feature:
+     1. get rid of corresponding row
+     2. get rid of the attribute
+     3. set the values to some value (zero, mean, median etc)
+   - Can be accomplish using ~DataFrame~ methods:
+     #+BEGIN_SRC python
+     housing.dropna(subset=["total_bedrooms"])  # option 1
+     housing.drop("total_bedrooms", axis=1)     # option 2
+     median = housing["total_bedrooms"].median()
+     housing["total_bedrooms"].fillna(median)   # option 3
+     #+END_SRC
+   - Scikit provides ~Imputer~ class for dealing with missing values:
+     - specify strategy and create an instance:
+       #+BEGIN_SRC python
+       from sklearn.preprocessing import Imputer
+       imputer = Imputer(stragety="median")
+       #+END_SRC
+     - since median can be calculated only on numerical values, we need to create
+       copy of data without categorical attribute ~ocean_proximity~:
+       #+BEGIN_SRC python :results output :session data :tangle yes
+       housing_num = housing.drop("ocean_proximity", axis=1)
+       #+END_SRC
+
+       #+RESULTS:
+
+     - fit
+       #+BEGIN_SRC python
+       imputer.fit(housing_num)
+       #+END_SRC
+** Handling Text and Categorical Attributes
+   - text labels to numbers
+   - Scikit ~LabelEncoder~ (numbers) and ~OneHotEncoder~ (bits)
+     - problem with numbers (~LabelEncoder~) is that, algorithm can consider categories
+       with closer label as closer attributes, hence use bits (~OneHotEncoder~)
+   - For implementing custom transformers in scikit, need to implement 3 methods:
+     1. ~fit~
+     2. ~transform~
+     3. ~fit_transform~
+** Feature Scaling
+*** Min-max scaling (Normalization)
+*** Standardization
+** Transformation Pipelines
+   - help with sequence of transformation
+   - pipelines run in parallel
+     #+BEGIN_SRC python :results output :session data :tangle yes
+     from sklearn.pipeline import Pipeline
+     from sklearn.preprocessing import StandardScaler
+     from sklearn.pipeline import FeatureUnion
+     from sklearn_features.transformers import DataFrameSelector
+
+     num_attribs = list(housing_num)
+     cat_attribs = ["ocean_proximity"]
+
+     num_pipeline = Pipeline([
+       ('selector', DataFrameSelector(num_attribs)),
+       ('imputer', Imputer(stragety="median")),
+       ('attribs_adder', CombinedAttributesAdder()),
+       ('std_scaler', StandardScaler())])
+
+     cat_pipeline = Pipeline([
+       ('selector', DataFrameSelector(cat_attribs)),
+       ('label_binarizer', LabelBinarizer())])
+
+     full_pipeline = FeatureUnion(transformer_list=[
+       ("num_pipeline", num_pipeline),
+       ("cat_pipeline", cat_pipeline)])
+
+     housing_prepared = full_pipeline.fit_transform(housing)
+     housing_prepared
+     #+END_SRC
+
+     #+RESULTS:
