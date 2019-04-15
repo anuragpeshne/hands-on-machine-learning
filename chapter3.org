@@ -12,3 +12,38 @@
   : (70000,)
 
   - by default data is stored in ~$HOME/scikit_learn_data~
+* Performance Measure
+  - Evaluating a classifier is often significantly trickier than evaluating a regressor
+** Confusion Matrix
+   - Definitions
+     | Negative Class  | Non X                         |                                                  |
+     | Positive Class  | X                             |                                                  |
+     |-----------------+-------------------------------+--------------------------------------------------|
+     | True Negatives  | Correctly classified as non X |                                                  |
+     | False Positives | Wrongly classified as X       |                                                  |
+     | False Negatives | Wrongly classified as non X   |                                                  |
+     | True Positives  | Correctly classified as X     |                                                  |
+     |-----------------+-------------------------------+--------------------------------------------------|
+     | Precision       | TP / (TP + FP)                | How many true X are there out of all we reported |
+     | Recall          | TP / (TP + FN)                | How many X we got out of all Xs                  |
+*** Precision and Recall
+    - /decision/ function determines the precision/recall tradeoff
+      - Lower threshold: more recall less precision
+      - More threshold: more precision less recall
+* Multiclass Classification
+  - Some algorithms, such as Random Forrest or naive Bayes classifier are capable
+    of handling multiple classes directly
+  - To use binary classifier as multiclass classifier, we have to create those many
+    binary classifier (~is1?~, ~is2?~, ~is3?~...)
+** Strategies
+   - Two strategies:
+     1. One-versus-all (OvA)
+        - Train 10 classifiers, get decision scores from each and pick one with highest score
+     2. One-versus-one (OvO)
+        - Train a binary classifier to distinguish between 0 and 1, 0 and 1, 1 and 2...
+        - n * (n - 1) / 2 classifiers
+   - Some algorithms, such as SVM, scale poorly with the size of the training set
+     - so for such algorithms, OvO is preferred
+       - training many classifiers on small training set is faster than few classifiers
+         on large training sets
+     - For others OvA is preferred
